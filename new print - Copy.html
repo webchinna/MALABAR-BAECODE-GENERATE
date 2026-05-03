@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Borderless Tags | GW Label Left-Aligned | Working Excel Export</title>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    font-family: Arial; 
+    background: #eef2f7; 
+    padding: 10px;
+}
+
+.panel {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.input-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+.input-group input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 140px;
+}
+.input-group input:focus {
+    outline: none;
+    border-color: #1a6d85;
+    box-shadow: 0 0 0 2px rgba(26,109,133,0.1);
+}
+
+.search-panel {
+    background: #f8fafc;
+    padding: 12px 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #e2e8f0;
+}
+.search-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #1a6d85;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.search-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+.search-item {
+    flex: 1;
+    min-width: 180px;
+}
+.search-item label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 4px;
+}
+.search-item input, .search-item select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+}
+.search-item button {
+    padding: 8px 16px;
+    background: #1a6d85;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    width: 100%;
+}
+.search-item button:hover { background: #0e4d5e; }
+.search-item .clear-btn { background: #6c757d; }
+.search-item .clear-btn:hover { background: #5a6268; }
+.search-status {
+    font-size: 12px;
+    color: #1a6d85;
+    margin-top: 8px;
+    padding: 5px 10px;
+    background: #e8f4f8;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+    align-items: center;
+}
+button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+.btn-add { background: #28a745; color: white; }
+.btn-add:hover { background: #218838; }
+.btn-add-print { background: #6f42c1; color: white; }
+.btn-add-print:hover { background: #5a32a3; }
+.btn-clear { background: #ffc107; color: #333; }
+.btn-clear:hover { background: #e0a800; }
+.btn-print { background: #007bff; color: white; }
+.btn-print:hover { background: #0056b3; }
+.btn-excel { background: #17a2b8; color: white; }
+.btn-excel:hover { background: #138496; }
+.btn-pdf { background: #dc3545; color: white; }
+.btn-pdf:hover { background: #c82333; }
+
+.file-upload-area {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #f3f4f6;
+    padding: 5px 12px;
+    border-radius: 6px;
+}
+.file-upload-area input {
+    padding: 5px;
+    font-size: 12px;
+}
+
+.stats-bar {
+    background: linear-gradient(135deg, #1a6d85, #0e4d5e);
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    color: white;
+}
+.stat-card {
+    background: rgba(255,255,255,0.15);
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+.stat-label {
+    font-size: 12px;
+    opacity: 0.9;
+    letter-spacing: 1px;
+}
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+.preview-header {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    color: #1a6d85;
+    border-bottom: 2px solid #1a6d85;
+}
+
+.tag { 
+    width: 6cm; 
+    height: 2cm; 
+    display: flex; 
+    margin-bottom: 3px; 
+    gap: 8px; 
+    border: none !important;
+}
+.page { 
+    page-break-after: always;
+    border: none !important;
+}
+
+.left {
+    width: 60%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    margin-left: 0.93cm;
+    background: transparent;
+    gap: 12px;
+    padding: 0;
+    border: none !important;
+}
+
+.design-qr-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: none !important;
+    background: transparent;
+}
+
+.huid-qr-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: none !important;
+    background: transparent;
+}
+
+.qr-label {
+    font-size: 6px;
+    font-weight: bold;
+    color: #1a6d85;
+    text-align: center;
+    background: transparent;
+    padding: 1px 2px;
+    border: none !important;
+}
+
+.qr-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    padding: 0;
+    border: none !important;
+}
+.qr-container.design-qr canvas { width: 1.2cm !important; height: 1.2cm !important; }
+.qr-container.huid-qr canvas { width: 0.85cm !important; height: 0.85cm !important; }
+.qr-container canvas { image-rendering: crisp-edges; border: none !important; }
+
+.label-right {
+    width: 20%;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    padding: 6px 8px;
+    margin-left: -0.8cm;
+    border: none !important;
+}
+
+.mr-value-only {
+    font-weight: bold;
+    color: #1a3a4a;
+    text-align: right;
+    font-size: 9px;
+    white-space: nowrap;
+    overflow: visible;
+    margin-bottom: 4px;
+    width: 100%;
+    display: block;
+    border: none !important;
+}
+
+.huid-text-right {
+    font-weight: bold;
+    color: #1a3a4a;
+    text-align: right;
+    font-size: 9px;
+    white-space: nowrap;
+    overflow: visible;
+    margin-bottom: 6px;
+    width: 100%;
+    display: block;
+    border: none !important;
+}
+
+.gw-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: baseline;
+    font-size: 9px;
+    font-weight: bold;
+    margin-bottom: 2px;
+    gap: 4px;
+    white-space: nowrap;
+    width: 100%;
+}
+.gw-label {
+    font-weight: bold;
+    color: #1a6d85;
+    font-size: 9px;
+}
+.gw-value {
+    font-weight: bold;
+    color: #1a3a4a;
+    font-size: 9px;
+}
+.separator {
+    font-weight: bold;
+    color: #1a6d85;
+    font-size: 9px;
+}
+.sw-value-only {
+    font-weight: bold;
+    color: #1a3a4a;
+    font-size: 9px;
+}
+
+.item-card {
+    position: relative;
+    margin-bottom: 5px;
+    border: none !important;
+}
+.item-card:hover { border: none !important; }
+.item-actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: flex;
+    gap: 5px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+.item-card:hover .item-actions { opacity: 1; }
+.edit-btn, .delete-btn, .print-single-btn {
+    padding: 2px 8px;
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    border: none;
+}
+.edit-btn { background: #ffc107; color: #333; }
+.delete-btn { background: #dc3545; color: white; }
+.print-single-btn { background: #20c997; color: white; }
+
+@media print {
+    @page { margin: 0 !important; size: auto; }
+    body { margin: 0; padding: 0; background: white; }
+    .panel, .stats-bar, .preview-header, .item-actions, .search-panel, button, .file-upload-area {
+        display: none !important;
+    }
+    .left { margin-left: 0.93cm !important; }
+    .label-right { margin-left: -0.8cm !important; }
+    .print-page { page-break-after: always; }
+}
+
+.info-hint {
+    background: #e8f4f8;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #1a6d85;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+.empty-state { text-align: center; padding: 50px; color: #999; }
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+    <div class="info-hint">
+        ⚡ <strong>GW Label aligned with HUID text | Working Excel Export with Date/Time</strong>
+    </div>
+    
+    <div class="search-panel">
+        <div class="search-title">🔎 SEARCH TAGS</div>
+        <div class="search-row">
+            <div class="search-item">
+                <label>MR NUMBER</label>
+                <input type="text" id="searchMr" placeholder="Search by MR Number..." autocomplete="off">
+            </div>
+            <div class="search-item">
+                <label>HUID CODE</label>
+                <input type="text" id="searchHuid" placeholder="Search by HUID Code..." autocomplete="off">
+            </div>
+            <div class="search-item">
+                <label>&nbsp;</label>
+                <button onclick="searchTags()">🔍 SEARCH</button>
+            </div>
+            <div class="search-item">
+                <label>&nbsp;</label>
+                <button class="clear-btn" onclick="clearSearch()">🗑️ CLEAR SEARCH</button>
+            </div>
+        </div>
+        <div id="searchStatus" class="search-status"></div>
+    </div>
+    
+    <div class="input-group">
+        <input type="text" id="designCode" placeholder="Design Code" maxlength="30" autocomplete="off">
+        <input type="text" id="huidCode" placeholder="HUID Code" maxlength="50" autocomplete="off">
+        <input type="text" id="mrNumber" placeholder="MR Number (auto-syncs)" maxlength="30" readonly style="background:#f5f5f5; cursor:default;">
+        <input type="text" id="gwgt" placeholder="GW" maxlength="10" autocomplete="off">
+        <input type="text" id="swgt" placeholder="SW" maxlength="10" autocomplete="off">
+    </div>
+    <div class="button-group">
+        <button class="btn-add" id="addBtn" onclick="addTagOnly()">➕ ADD TAG</button>
+        <button class="btn-add-print" id="addPrintBtn" onclick="addAndPrintDirect()">➕🖨️ ADD & DIRECT PRINT</button>
+        <button class="btn-print" id="printBtn" onclick="printAllDirect()">🖨️ PRINT ALL (DIRECT)</button>
+        <button class="btn-excel" id="exportExcelBtn" onclick="exportToExcel()">📊 EXPORT EXCEL</button>
+        <button class="btn-pdf" id="exportPdfBtn" onclick="exportToPDF()">📄 EXPORT PDF</button>
+        <button class="btn-clear" onclick="clearForm()">🗑️ CLEAR</button>
+        <div class="file-upload-area">
+            <span>📂 UPLOAD EXCEL</span>
+            <input type="file" id="excelUpload" accept=".xlsx, .xls, .csv" onchange="uploadExcel()">
+        </div>
+    </div>
+</div>
+
+<div class="stats-bar">
+    <div class="stat-card"><div class="stat-label">TOTAL TAGS</div><div class="stat-value" id="totalCount">0</div></div>
+    <div class="stat-card"><div class="stat-label">TOTAL GW</div><div class="stat-value" id="totalGWGT">0.00</div></div>
+    <div class="stat-card"><div class="stat-label">TOTAL SW</div><div class="stat-value" id="totalSWGT">0.00</div></div>
+</div>
+
+<div class="preview-header">
+    <span>📋 TAG PREVIEW — GW Label aligned straight with HUID text</span>
+    <span style="font-size:12px;">🔍 Search by MR or HUID | Press ENTER = Direct Print</span>
+</div>
+
+<div id="preview"></div>
+
+<script>
+let items = [];
+let filteredItems = [];
+let editIndex = null;
+let isProcessing = false;
+let currentSearchMr = "";
+let currentSearchHuid = "";
+
+function formatTo3Decimals(value) {
+    if (!value && value !== 0) return "0.000";
+    let num = parseFloat(value);
+    if (isNaN(num)) return "0.000";
+    return num.toFixed(3);
+}
+
+const designCodeInput = document.getElementById('designCode');
+const mrNumberInput = document.getElementById('mrNumber');
+
+function copyDesignToMR() {
+    mrNumberInput.value = designCodeInput.value.trim();
+}
+designCodeInput.addEventListener('input', copyDesignToMR);
+designCodeInput.addEventListener('change', copyDesignToMR);
+designCodeInput.addEventListener('paste', () => setTimeout(copyDesignToMR, 10));
+
+let isEditing = false;
+designCodeInput.addEventListener('input', function() {
+    if (!isEditing) mrNumberInput.value = designCodeInput.value.trim();
+});
+
+function searchTags() {
+    currentSearchMr = document.getElementById('searchMr').value.trim().toLowerCase();
+    currentSearchHuid = document.getElementById('searchHuid').value.trim().toLowerCase();
+    
+    if (currentSearchMr === "" && currentSearchHuid === "") {
+        filteredItems = [...items];
+        document.getElementById('searchStatus').innerHTML = "📋 Showing all tags";
+    } else {
+        filteredItems = items.filter(item => {
+            let matchMr = true;
+            let matchHuid = true;
+            if (currentSearchMr !== "") {
+                matchMr = (item.mrNumber || "").toLowerCase().includes(currentSearchMr);
+            }
+            if (currentSearchHuid !== "") {
+                matchHuid = (item.huidCode || "").toLowerCase().includes(currentSearchHuid);
+            }
+            return matchMr && matchHuid;
+        });
+        
+        let statusMsg = `🔍 Found ${filteredItems.length} tag(s)`;
+        if (currentSearchMr) statusMsg += ` | MR contains "${currentSearchMr}"`;
+        if (currentSearchHuid) statusMsg += ` | HUID contains "${currentSearchHuid}"`;
+        document.getElementById('searchStatus').innerHTML = statusMsg;
+    }
+    
+    renderFiltered();
+    updateStatsFromFiltered();
+}
+
+function clearSearch() {
+    document.getElementById('searchMr').value = "";
+    document.getElementById('searchHuid').value = "";
+    currentSearchMr = "";
+    currentSearchHuid = "";
+    filteredItems = [...items];
+    document.getElementById('searchStatus').innerHTML = "📋 Showing all tags";
+    renderFiltered();
+    updateStatsFromFiltered();
+}
+
+function updateStatsFromFiltered() {
+    let totalGW = 0, totalSW = 0;
+    filteredItems.forEach(i => { 
+        totalGW += parseFloat(i.gwgt) || 0; 
+        totalSW += parseFloat(i.swgt) || 0; 
+    });
+    document.getElementById('totalCount').innerText = filteredItems.length;
+    document.getElementById('totalGWGT').innerHTML = totalGW.toFixed(2);
+    document.getElementById('totalSWGT').innerHTML = totalSW.toFixed(2);
+}
+
+function isHuidDuplicate(huidCode, excludeIndex = -1) {
+    for (let i = 0; i < items.length; i++) {
+        if (excludeIndex !== -1 && i === excludeIndex) continue;
+        if (items[i].huidCode && items[i].huidCode.toLowerCase() === huidCode.toLowerCase()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function showDuplicateAlert(huidCode) {
+    alert(`❌ DUPLICATE HUID!\n\nHUID Code "${huidCode}" already exists.\nPlease enter a unique HUID code.`);
+}
+
+function getCurrentFormData() {
+    let d = designCodeInput.value.trim();
+    let h = document.getElementById('huidCode').value.trim();
+    let m = mrNumberInput.value.trim();
+    let g = document.getElementById('gwgt').value.trim();
+    let s = document.getElementById('swgt').value.trim();
+    if (m !== d) { m = d; mrNumberInput.value = d; }
+    return { designCode: d, huidCode: h, mrNumber: m, gwgt: g, swgt: s };
+}
+
+function validateFormData(data, isUpdateMode = false, updateIndex = -1) {
+    if (!data.designCode) { alert("Enter Design Code"); return false; }
+    if (!data.huidCode) { alert("Enter HUID Code"); return false; }
+    if (isUpdateMode && updateIndex !== -1) {
+        if (isHuidDuplicate(data.huidCode, updateIndex)) { showDuplicateAlert(data.huidCode); return false; }
+    } else {
+        if (isHuidDuplicate(data.huidCode)) { showDuplicateAlert(data.huidCode); return false; }
+    }
+    return true;
+}
+
+function getDateTimeString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+}
+
+function directPrintToPrinter(htmlContent) {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+            setTimeout(() => printWindow.close(), 500);
+        }, 500);
+    } else {
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+        const iframeDoc = iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(htmlContent);
+        iframeDoc.close();
+        setTimeout(() => {
+            iframe.contentWindow.print();
+            setTimeout(() => document.body.removeChild(iframe), 1000);
+        }, 500);
+    }
+}
+
+function addAndPrintDirect() {
+    if (isProcessing) return;
+    isProcessing = true;
+    const formData = getCurrentFormData();
+    if (!validateFormData(formData, editIndex !== null, editIndex !== null ? editIndex : -1)) {
+        isProcessing = false;
+        return;
+    }
+    
+    let newTagIndex = -1;
+    if (editIndex !== null) {
+        items[editIndex] = { ...formData };
+        newTagIndex = editIndex;
+        editIndex = null;
+        isEditing = false;
+        document.getElementById('addBtn').innerHTML = '➕ ADD TAG';
+        document.getElementById('addBtn').style.background = '#28a745';
+    } else {
+        items.push({ ...formData });
+        newTagIndex = items.length - 1;
+    }
+    
+    clearForm();
+    clearSearch();
+    render();
+    
+    setTimeout(() => {
+        if (newTagIndex >= 0 && items[newTagIndex]) {
+            const tagHtml = generateSingleTagHtml(items[newTagIndex]);
+            directPrintToPrinter(tagHtml);
+        }
+        setTimeout(() => { isProcessing = false; }, 500);
+    }, 400);
+    setTimeout(() => designCodeInput.focus(), 100);
+}
+
+function printAllDirect() {
+    if(!items.length) { alert("No tags to print."); return; }
+    let allHtml = generateAllTagsHtml();
+    directPrintToPrinter(allHtml);
+}
+
+function generateSingleTagHtml(item) {
+    const gwDisplay = formatTo3Decimals(item.gwgt);
+    const swDisplay = formatTo3Decimals(item.swgt);
+    return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Print Tag</title>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"><\/script>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    @page { margin:0 !important; size:auto; }
+    body { margin:0; padding:0; background:white; display:flex; justify-content:flex-start; min-height:100vh; }
+    .tag { width:6cm; height:2cm; display:flex; gap:8px; margin:0; }
+    .left { width:60%; display:flex; flex-direction:row; align-items:center; justify-content:flex-start; margin-left:0.93cm; gap:12px; }
+    .design-qr-item { display:flex; flex-direction:column; align-items:center; gap:2px; }
+    .huid-qr-item { display:flex; flex-direction:column; align-items:center; gap:2px; }
+    .qr-label { font-size:6px; font-weight:bold; color:#1a6d85; text-align:center; }
+    .qr-container { display:flex; justify-content:center; align-items:center; }
+    .qr-container.design-qr canvas { width:1.2cm !important; height:1.2cm !important; }
+    .qr-container.huid-qr canvas { width:0.85cm !important; height:0.85cm !important; }
+    .label-right { width:20%; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; padding:6px 8px; margin-left:-0.8cm; }
+    .mr-value-only { font-weight:bold; color:#1a3a4a; text-align:right; font-size:9px; white-space:nowrap; margin-bottom:4px; width:100%; }
+    .huid-text-right { font-weight:bold; color:#1a3a4a; text-align:right; font-size:9px; white-space:nowrap; margin-bottom:6px; width:100%; }
+    .gw-row { display:flex; justify-content:flex-start; align-items:baseline; font-size:9px; font-weight:bold; margin-bottom:2px; gap:4px; white-space:nowrap; width:100%; }
+    .gw-label { font-weight:bold; color:#1a6d85; font-size:9px; }
+    .gw-value { font-weight:bold; color:#1a3a4a; font-size:9px; }
+    .separator { font-weight:bold; color:#1a6d85; font-size:9px; }
+    .sw-value-only { font-weight:bold; color:#1a3a4a; font-size:9px; }
+</style>
+</head>
+<body>
+<div class="tag">
+    <div class="left">
+        <div class="design-qr-item">
+            <div class="qr-container design-qr" id="qr_design"></div>
+            <div class="qr-label">DESIGN</div>
+        </div>
+        <div class="huid-qr-item">
+            <div class="qr-container huid-qr" id="qr_huid"></div>
+        </div>
+    </div>
+    <div class="label-right">
+        <div class="mr-value-only">${escapeHtml(item.mrNumber)}</div>
+        <div class="huid-text-right">${escapeHtml(item.huidCode)}</div>
+        <div class="gw-row">
+            <span class="gw-label">GW</span>
+            <span class="gw-value">${escapeHtml(gwDisplay)}</span>
+            <span class="separator">/</span>
+            <span class="sw-value-only">${escapeHtml(swDisplay)}</span>
+        </div>
+    </div>
+</div>
+<script>
+    function makeQR(cid, txt, isH) {
+        const c = document.getElementById(cid);
+        if(!c) return;
+        c.innerHTML = '';
+        const sz = isH ? 90 : 130;
+        const cv = document.createElement('canvas');
+        cv.width = sz; cv.height = sz;
+        cv.style.width = isH ? '0.85cm' : '1.2cm';
+        cv.style.height = isH ? '0.85cm' : '1.2cm';
+        c.appendChild(cv);
+        const td = document.createElement('div');
+        td.style.cssText = 'position:absolute;left:-9999px';
+        document.body.appendChild(td);
+        new QRCode(td, { text: txt, width: sz, height: sz, colorDark: "#000", colorLight: "#fff", correctLevel: QRCode.CorrectLevel.H });
+        setTimeout(() => {
+            const el = td.querySelector('table, canvas');
+            if(el) {
+                const ctx = cv.getContext('2d');
+                ctx.fillStyle = '#FFF'; ctx.fillRect(0,0,sz,sz);
+                if(el.tagName === 'TABLE') {
+                    const cells = el.querySelectorAll('td');
+                    const per = Math.sqrt(cells.length);
+                    const cs = sz / per;
+                    cells.forEach((cell, idx) => {
+                        const r = Math.floor(idx / per), col = idx % per;
+                        const isB = cell.style.backgroundColor === 'rgb(0,0,0)' || cell.style.backgroundColor === 'black';
+                        if(isB) { ctx.fillStyle = '#000'; ctx.fillRect(col*cs, r*cs, cs, cs); }
+                    });
+                } else if(el.tagName === 'CANVAS') { ctx.drawImage(el,0,0,sz,sz); }
+            }
+            document.body.removeChild(td);
+        }, 100);
+    }
+    makeQR('qr_design', '${escapeHtml(item.designCode)}', false);
+    makeQR('qr_huid', '${escapeHtml(item.huidCode)}', true);
+    setTimeout(() => { window.print(); window.close(); }, 600);
+<\/script>
+</body>
+</html>`;
+}
+
+function generateAllTagsHtml() {
+    let allHtml = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Print All Tags</title>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"><\/script>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    @page { margin:0 !important; size:auto; }
+    body { margin:0; padding:0; background:white; }
+    .tag { width:6cm; height:2cm; display:flex; gap:8px; margin:0; }
+    .left { width:60%; display:flex; flex-direction:row; align-items:center; justify-content:flex-start; margin-left:0.93cm; gap:12px; }
+    .design-qr-item { display:flex; flex-direction:column; align-items:center; gap:2px; }
+    .huid-qr-item { display:flex; flex-direction:column; align-items:center; gap:2px; }
+    .qr-label { font-size:6px; font-weight:bold; color:#1a6d85; text-align:center; }
+    .qr-container { display:flex; justify-content:center; align-items:center; }
+    .qr-container.design-qr canvas { width:1.2cm !important; height:1.2cm !important; }
+    .qr-container.huid-qr canvas { width:0.85cm !important; height:0.85cm !important; }
+    .label-right { width:20%; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; padding:6px 8px; margin-left:-0.8cm; }
+    .mr-value-only { font-weight:bold; color:#1a3a4a; text-align:right; font-size:9px; white-space:nowrap; margin-bottom:4px; width:100%; }
+    .huid-text-right { font-weight:bold; color:#1a3a4a; text-align:right; font-size:9px; white-space:nowrap; margin-bottom:6px; width:100%; }
+    .gw-row { display:flex; justify-content:flex-start; align-items:baseline; font-size:9px; font-weight:bold; margin-bottom:2px; gap:4px; white-space:nowrap; width:100%; }
+    .gw-label { font-weight:bold; color:#1a6d85; font-size:9px; }
+    .gw-value { font-weight:bold; color:#1a3a4a; font-size:9px; }
+    .separator { font-weight:bold; color:#1a6d85; font-size:9px; }
+    .sw-value-only { font-weight:bold; color:#1a3a4a; font-size:9px; }
+    .print-page { page-break-after: always; break-after: page; }
+    .print-page:last-child { page-break-after: auto; }
+</style>
+</head>
+<body>`;
+    
+    items.forEach((item, idx) => {
+        const gwDisplay = formatTo3Decimals(item.gwgt);
+        const swDisplay = formatTo3Decimals(item.swgt);
+        allHtml += `
+    <div class="print-page">
+        <div class="tag">
+            <div class="left">
+                <div class="design-qr-item">
+                    <div class="qr-container design-qr" id="qr_design_${idx}"></div>
+                    <div class="qr-label">DESIGN</div>
+                </div>
+                <div class="huid-qr-item">
+                    <div class="qr-container huid-qr" id="qr_huid_${idx}"></div>
+                </div>
+            </div>
+            <div class="label-right">
+                <div class="mr-value-only">${escapeHtml(item.mrNumber)}</div>
+                <div class="huid-text-right">${escapeHtml(item.huidCode)}</div>
+                <div class="gw-row">
+                    <span class="gw-label">GW</span>
+                    <span class="gw-value">${escapeHtml(gwDisplay)}</span>
+                    <span class="separator">/</span>
+                    <span class="sw-value-only">${escapeHtml(swDisplay)}</span>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    });
+    
+    allHtml += `
+<script>
+    const itemsData = ${JSON.stringify(items)};
+    itemsData.forEach((item, idx) => {
+        function makeQR(containerId, text, isHuid) {
+            const container = document.getElementById(containerId);
+            if(!container) return;
+            container.innerHTML = '';
+            const size = isHuid ? 90 : 130;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            canvas.style.width = isHuid ? '0.85cm' : '1.2cm';
+            canvas.style.height = isHuid ? '0.85cm' : '1.2cm';
+            container.appendChild(canvas);
+            const temp = document.createElement('div');
+            temp.style.cssText = 'position:absolute;left:-9999px';
+            document.body.appendChild(temp);
+            new QRCode(temp, { text: text, width: size, height: size, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+            setTimeout(() => {
+                const qrEl = temp.querySelector('table, canvas');
+                if(qrEl) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0,0,size,size);
+                    if(qrEl.tagName === 'TABLE') {
+                        const cells = qrEl.querySelectorAll('td');
+                        const perRow = Math.sqrt(cells.length);
+                        const cellSize = size / perRow;
+                        cells.forEach((cell, idx) => {
+                            const row = Math.floor(idx / perRow);
+                            const col = idx % perRow;
+                            const isBlack = cell.style.backgroundColor === 'rgb(0,0,0)' || cell.style.backgroundColor === 'black';
+                            if(isBlack) { ctx.fillStyle = '#000000'; ctx.fillRect(col*cellSize, row*cellSize, cellSize, cellSize); }
+                        });
+                    } else if(qrEl.tagName === 'CANVAS') { ctx.drawImage(qrEl,0,0,size,size); }
+                }
+                document.body.removeChild(temp);
+            }, 100);
+        }
+        makeQR('qr_design_' + idx, item.designCode, false);
+        makeQR('qr_huid_' + idx, item.huidCode, true);
+    });
+    setTimeout(() => { window.print(); window.close(); }, 800);
+<\/script>
+</body>
+</html>`;
+    return allHtml;
+}
+
+// ========== FIXED EXCEL EXPORT FUNCTION ==========
+function exportToExcel() {
+    if(items.length === 0) {
+        alert("No data to export.");
+        return;
+    }
+    
+    // Prepare data for export
+    const exportData = [];
+    
+    // Add header row
+    exportData.push({
+        "SL NO": "SL NO",
+        "DESIGN CODE": "DESIGN CODE",
+        "HUID CODE": "HUID CODE",
+        "MR NUMBER": "MR NUMBER",
+        "GW (kg)": "GW (kg)",
+        "SW (kg)": "SW (kg)"
+    });
+    
+    // Add data rows
+    items.forEach((item, index) => {
+        exportData.push({
+            "SL NO": index + 1,
+            "DESIGN CODE": item.designCode || "",
+            "HUID CODE": item.huidCode || "",
+            "MR NUMBER": item.mrNumber || "",
+            "GW (kg)": parseFloat(item.gwgt) || 0,
+            "SW (kg)": parseFloat(item.swgt) || 0
+        });
+    });
+    
+    // Calculate totals
+    let totalGW = 0;
+    let totalSW = 0;
+    items.forEach(item => {
+        totalGW += parseFloat(item.gwgt) || 0;
+        totalSW += parseFloat(item.swgt) || 0;
+    });
+    
+    // Add empty row
+    exportData.push({
+        "SL NO": "",
+        "DESIGN CODE": "",
+        "HUID CODE": "",
+        "MR NUMBER": "",
+        "GW (kg)": "",
+        "SW (kg)": ""
+    });
+    
+    // Add summary rows
+    exportData.push({
+        "SL NO": "",
+        "DESIGN CODE": "📊 SUMMARY",
+        "HUID CODE": "",
+        "MR NUMBER": "",
+        "GW (kg)": "",
+        "SW (kg)": ""
+    });
+    
+    exportData.push({
+        "SL NO": "",
+        "DESIGN CODE": "TOTAL QUANTITY (QTY)",
+        "HUID CODE": "",
+        "MR NUMBER": items.length + " Tags",
+        "GW (kg)": "",
+        "SW (kg)": ""
+    });
+    
+    exportData.push({
+        "SL NO": "",
+        "DESIGN CODE": "TOTAL GW",
+        "HUID CODE": "",
+        "MR NUMBER": "",
+        "GW (kg)": totalGW.toFixed(3),
+        "SW (kg)": ""
+    });
+    
+    exportData.push({
+        "SL NO": "",
+        "DESIGN CODE": "TOTAL SW",
+        "HUID CODE": "",
+        "MR NUMBER": "",
+        "GW (kg)": "",
+        "SW (kg)": totalSW.toFixed(3)
+    });
+    
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    // Set column widths
+    ws['!cols'] = [
+        { wch: 8 },   // SL NO
+        { wch: 25 },  // DESIGN CODE
+        { wch: 22 },  // HUID CODE
+        { wch: 20 },  // MR NUMBER
+        { wch: 12 },  // GW (kg)
+        { wch: 12 }   // SW (kg)
+    ];
+    
+    // Create workbook and save
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Barcode_Tags");
+    
+    const dateTimeStr = getDateTimeString();
+    XLSX.writeFile(wb, `Barcode_Tags_${dateTimeStr}.xlsx`);
+}
+
+// ========== FIXED PDF EXPORT FUNCTION ==========
+function exportToPDF() {
+    if(items.length === 0) {
+        alert("No data to export to PDF.");
+        return;
+    }
+    
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.padding = '20px';
+    pdfContainer.style.background = 'white';
+    pdfContainer.style.width = '800px';
+    pdfContainer.style.fontFamily = 'Arial, sans-serif';
+    
+    // Header with date/time
+    const header = document.createElement('div');
+    header.style.textAlign = 'center';
+    header.style.marginBottom = '20px';
+    header.style.padding = '10px';
+    header.style.borderBottom = '2px solid #1a6d85';
+    header.innerHTML = `<h2>Barcode Tags Report</h2>
+                        <p>Generated on: ${new Date().toLocaleString()}</p>
+                        <p>Total Tags: ${items.length}</p>
+                        <p>Total GW: ${items.reduce((sum, i) => sum + (parseFloat(i.gwgt) || 0), 0).toFixed(3)} kg</p>
+                        <p>Total SW: ${items.reduce((sum, i) => sum + (parseFloat(i.swgt) || 0), 0).toFixed(3)} kg</p>`;
+    pdfContainer.appendChild(header);
+    
+    // Create table
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    table.style.marginTop = '20px';
+    
+    // Table header
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['SL NO', 'DESIGN CODE', 'HUID CODE', 'MR NUMBER', 'GW (kg)', 'SW (kg)'].forEach(text => {
+        const th = document.createElement('th');
+        th.textContent = text;
+        th.style.border = '1px solid #ddd';
+        th.style.padding = '8px';
+        th.style.backgroundColor = '#1a6d85';
+        th.style.color = 'white';
+        th.style.fontSize = '12px';
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    
+    // Table body
+    const tbody = document.createElement('tbody');
+    items.forEach((item, idx) => {
+        const row = document.createElement('tr');
+        row.style.backgroundColor = idx % 2 === 0 ? '#f9f9f9' : 'white';
+        
+        const td1 = document.createElement('td');
+        td1.textContent = (idx + 1).toString();
+        td1.style.border = '1px solid #ddd';
+        td1.style.padding = '6px';
+        td1.style.fontSize = '11px';
+        row.appendChild(td1);
+        
+        const td2 = document.createElement('td');
+        td2.textContent = item.designCode || '';
+        td2.style.border = '1px solid #ddd';
+        td2.style.padding = '6px';
+        td2.style.fontSize = '11px';
+        row.appendChild(td2);
+        
+        const td3 = document.createElement('td');
+        td3.textContent = item.huidCode || '';
+        td3.style.border = '1px solid #ddd';
+        td3.style.padding = '6px';
+        td3.style.fontSize = '11px';
+        row.appendChild(td3);
+        
+        const td4 = document.createElement('td');
+        td4.textContent = item.mrNumber || '';
+        td4.style.border = '1px solid #ddd';
+        td4.style.padding = '6px';
+        td4.style.fontSize = '11px';
+        row.appendChild(td4);
+        
+        const td5 = document.createElement('td');
+        td5.textContent = (parseFloat(item.gwgt) || 0).toFixed(3);
+        td5.style.border = '1px solid #ddd';
+        td5.style.padding = '6px';
+        td5.style.fontSize = '11px';
+        td5.style.textAlign = 'right';
+        row.appendChild(td5);
+        
+        const td6 = document.createElement('td');
+        td6.textContent = (parseFloat(item.swgt) || 0).toFixed(3);
+        td6.style.border = '1px solid #ddd';
+        td6.style.padding = '6px';
+        td6.style.fontSize = '11px';
+        td6.style.textAlign = 'right';
+        row.appendChild(td6);
+        
+        tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    pdfContainer.appendChild(table);
+    
+    document.body.appendChild(pdfContainer);
+    
+    setTimeout(() => {
+        const dateTimeStr = getDateTimeString();
+        const opt = {
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: `Barcode_Tags_${dateTimeStr}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(pdfContainer).save().then(() => {
+            document.body.removeChild(pdfContainer);
+        });
+    }, 300);
+}
+
+function uploadExcel() {
+    const fileInput = document.getElementById('excelUpload');
+    const file = fileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(firstSheet);
+        if (rows.length === 0) { alert("Excel file is empty!"); return; }
+        let addedCount = 0, duplicateCount = 0, errorCount = 0;
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            let designCode = row['DESIGN CODE'] || row['Design Code'] || row['designCode'] || row['DESIGN'] || '';
+            let huidCode = row['HUID CODE'] || row['HUID Code'] || row['huidCode'] || row['HUID'] || '';
+            let gwgt = row['GW (kg)'] || row['GW'] || row['Gw'] || '';
+            let swgt = row['SW (kg)'] || row['SW'] || row['Sw'] || '';
+            let mrNumber = row['MR NUMBER'] || row['MR Number'] || row['mrNumber'] || '';
+            designCode = String(designCode || '').trim();
+            huidCode = String(huidCode || '').trim();
+            if (!designCode || !huidCode) { errorCount++; continue; }
+            if (isHuidDuplicate(huidCode)) { duplicateCount++; continue; }
+            items.push({ designCode, huidCode, mrNumber: mrNumber || designCode, gwgt: String(gwgt || '').trim(), swgt: String(swgt || '').trim() });
+            addedCount++;
+        }
+        alert(`📊 Upload Complete!\n✅ Added: ${addedCount}\n⚠️ Duplicates: ${duplicateCount}\n❌ Errors: ${errorCount}\n📦 Total: ${items.length}`);
+        fileInput.value = '';
+        clearSearch();
+        render();
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function addTagOnly() {
+    const formData = getCurrentFormData();
+    if (!validateFormData(formData, editIndex !== null, editIndex !== null ? editIndex : -1)) return;
+    if (editIndex !== null) {
+        items[editIndex] = { ...formData };
+        editIndex = null;
+        isEditing = false;
+        document.getElementById('addBtn').innerHTML = '➕ ADD TAG';
+        document.getElementById('addBtn').style.background = '#28a745';
+    } else {
+        items.push({ ...formData });
+    }
+    clearForm();
+    clearSearch();
+    render();
+}
+
+function printSingleTag(index) {
+    const item = items[index];
+    if (!item) return;
+    const tagHtml = generateSingleTagHtml(item);
+    directPrintToPrinter(tagHtml);
+}
+
+document.addEventListener('keypress', (e) => { 
+    if(e.key === 'Enter') { 
+        e.preventDefault(); 
+        document.getElementById('addPrintBtn').click(); 
+    } 
+});
+
+function editItem(idx) {
+    const item = items[idx];
+    isEditing = true;
+    designCodeInput.value = item.designCode;
+    document.getElementById('huidCode').value = item.huidCode || '';
+    mrNumberInput.value = item.designCode;
+    document.getElementById('gwgt').value = item.gwgt || '';
+    document.getElementById('swgt').value = item.swgt || '';
+    editIndex = idx;
+    const btn = document.getElementById('addBtn');
+    btn.innerHTML = '✏️ UPDATE';
+    btn.style.background = '#ffc107';
+    btn.style.color = '#333';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => { isEditing = false; }, 100);
+}
+
+function deleteItem(idx) {
+    if(confirm('Delete this tag?')) {
+        items.splice(idx,1);
+        if(editIndex === idx) { editIndex = null; isEditing = false; document.getElementById('addBtn').innerHTML = '➕ ADD TAG'; document.getElementById('addBtn').style.background = '#28a745'; clearForm(); }
+        else if(editIndex !== null && editIndex > idx) editIndex--;
+        clearSearch();
+        render();
+    }
+}
+
+function clearForm() {
+    isEditing = false;
+    designCodeInput.value = '';
+    document.getElementById('huidCode').value = '';
+    mrNumberInput.value = '';
+    document.getElementById('gwgt').value = '';
+    document.getElementById('swgt').value = '';
+    if(editIndex !== null) { editIndex = null; document.getElementById('addBtn').innerHTML = '➕ ADD TAG'; document.getElementById('addBtn').style.background = '#28a745'; }
+}
+
+function generateQRPreview(cid, text, isHuid) {
+    const c = document.getElementById(cid);
+    if(!c) return;
+    c.innerHTML = '';
+    const sz = isHuid ? 90 : 130;
+    const ds = isHuid ? '0.85cm' : '1.2cm';
+    const cv = document.createElement('canvas');
+    cv.width = sz; cv.height = sz;
+    cv.style.width = ds; cv.style.height = ds;
+    c.appendChild(cv);
+    const td = document.createElement('div');
+    td.style.cssText = 'position:absolute;left:-9999px';
+    document.body.appendChild(td);
+    try {
+        new QRCode(td, { text: text, width: sz, height: sz, colorDark: "#000", colorLight: "#fff", correctLevel: isHuid ? QRCode.CorrectLevel.H : QRCode.CorrectLevel.Q });
+        setTimeout(() => {
+            const el = td.querySelector('table, canvas');
+            if(el) {
+                const ctx = cv.getContext('2d');
+                ctx.fillStyle = '#FFF'; ctx.fillRect(0,0,sz,sz);
+                if(el.tagName === 'TABLE') {
+                    const cells = el.querySelectorAll('td');
+                    const pr = Math.sqrt(cells.length);
+                    const cs = sz / pr;
+                    cells.forEach((cell, idx) => {
+                        const row = Math.floor(idx / pr), col = idx % pr;
+                        const isBlack = cell.style.backgroundColor === 'rgb(0,0,0)' || cell.style.backgroundColor === 'black';
+                        if(isBlack) { ctx.fillStyle = '#000'; ctx.fillRect(col*cs, row*cs, cs, cs); }
+                    });
+                } else if(el.tagName === 'CANVAS') { ctx.drawImage(el,0,0,sz,sz); }
+            }
+            document.body.removeChild(td);
+        }, 100);
+    } catch(e) { document.body.removeChild(td); }
+}
+
+function renderFiltered() {
+    const preview = document.getElementById('preview');
+    if(filteredItems.length === 0) { 
+        preview.innerHTML = '<div class="empty-state">✨ No matching tags found. ✨</div>'; 
+        return; 
+    }
+    let html = '';
+    filteredItems.forEach((item, displayIdx) => {
+        const originalIdx = items.findIndex(i => i === item);
+        const gwDisplay = formatTo3Decimals(item.gwgt);
+        const swDisplay = formatTo3Decimals(item.swgt);
+        html += `
+        <div class="item-card">
+            <div class="item-actions">
+                <button class="edit-btn" onclick="editItem(${originalIdx})">✏️</button>
+                <button class="print-single-btn" onclick="printSingleTag(${originalIdx})">🖨️</button>
+                <button class="delete-btn" onclick="deleteItem(${originalIdx})">🗑️</button>
+            </div>
+            <div class="page"><div class="tag">
+                <div class="left">
+                    <div class="design-qr-item">
+                        <div class="qr-container design-qr" id="qr_design_${displayIdx}"></div>
+                        <div class="qr-label">DESIGN</div>
+                    </div>
+                    <div class="huid-qr-item">
+                        <div class="qr-container huid-qr" id="qr_huid_${displayIdx}"></div>
+                    </div>
+                </div>
+                <div class="label-right">
+                    <div class="mr-value-only">${escapeHtml(item.mrNumber)}</div>
+                    <div class="huid-text-right">${escapeHtml(item.huidCode)}</div>
+                    <div class="gw-row">
+                        <span class="gw-label">GW</span>
+                        <span class="gw-value">${escapeHtml(gwDisplay)}</span>
+                        <span class="separator">/</span>
+                        <span class="sw-value-only">${escapeHtml(swDisplay)}</span>
+                    </div>
+                </div>
+            </div></div>
+        </div>`;
+    });
+    preview.innerHTML = html;
+    filteredItems.forEach((item, displayIdx) => {
+        generateQRPreview(`qr_design_${displayIdx}`, item.designCode, false);
+        generateQRPreview(`qr_huid_${displayIdx}`, item.huidCode, true);
+    });
+}
+
+function render() {
+    filteredItems = [...items];
+    document.getElementById('searchMr').value = "";
+    document.getElementById('searchHuid').value = "";
+    currentSearchMr = "";
+    currentSearchHuid = "";
+    document.getElementById('searchStatus').innerHTML = "📋 Showing all tags";
+    renderFiltered();
+    updateStatsFromFiltered();
+}
+
+function escapeHtml(s) { if(!s) return ''; return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+
+render();
+copyDesignToMR();
+designCodeInput.focus();
+</script>
+</body>
+</html>
